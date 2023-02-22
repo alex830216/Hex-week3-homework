@@ -7,7 +7,11 @@ const app = {
       url: "https://vue3-course-api.hexschool.io/v2/",
       path: "alex-test",
       products: [],
-      tempProduct: {},
+      tempProduct: {
+        // 一開始沒有 imagesUrl 這個欄位，避免出錯需要加上
+        imagesUrl: [],
+      },
+      isNew: false,
     };
   },
   methods: {
@@ -40,12 +44,15 @@ const app = {
       this.tempProduct = product;
     },
     addOrUpdateProduct() {
+      let url = `${this.url}api/${this.path}/admin/product`;
+      let method = "post";
+      if (!this.isNew) {
+        url = `${this.url}api/${this.path}/admin/product/${this.tempProduct.id}`;
+        method = "put";
+      }
+      // 新增產品
       if (!this.tempProduct.id) {
-        // 新增產品
-        axios
-          .post(`${this.url}api/${this.path}/admin/product`, {
-            data: this.tempProduct,
-          })
+        axios[method](url, { data: this.tempProduct })
           .then((res) => {
             alert(res.data.message);
             this.getData();
@@ -54,13 +61,9 @@ const app = {
           .catch((err) => {
             alert(err.data.message);
           });
-      } else {
         // 編輯產品
-        axios
-          .put(
-            `${this.url}api/${this.path}/admin/product/${this.tempProduct.id}`,
-            { data: this.tempProduct }
-          )
+      } else {
+        axios[method](url, { data: this.tempProduct })
           .then((res) => {
             alert(res.data.message);
             this.getData();
@@ -71,13 +74,11 @@ const app = {
           });
       }
     },
+    // 刪除產品
     delProduct() {
-      // 刪除產品
+      const url = `${this.url}api/${this.path}/admin/product/${this.tempProduct.id}`;
       axios
-        .delete(
-          `${this.url}api/${this.path}/admin/product/${this.tempProduct.id}`,
-          { data: this.tempProduct }
-        )
+        .delete(url, { data: this.tempProduct })
         .then((res) => {
           alert(res.data.message);
           this.getData();
@@ -87,17 +88,21 @@ const app = {
           alert(err.data.message);
         });
     },
-    openModal(product) {
-      if (!product.id) {
+    openModal(status, product) {
+      if (status === "create") {
         productModal.show();
-      } else {
+        this.isNew = true;
+        this.tempProduct = {
+          imagesUrl: [],
+        };
+      } else if (status === "edit") {
+        productModal.show();
+        this.isNew = false;
         this.tempProduct = { ...product };
-        productModal.show();
+      } else if (status === "delete") {
+        delProductModal.show();
+        this.tempProduct = { ...product };
       }
-    },
-    openDelModal(product) {
-      this.tempProduct = { ...product };
-      delProductModal.show();
     },
   },
   // 一開始進入頁面就做
@@ -116,10 +121,8 @@ const app = {
     // const myModal = new bootstrap.Modal(document.getElementById('myModal'), options)
     // or
     // const myModalAlternative = new bootstrap.Modal("#myModal", options);
-    productModal = new bootstrap.Modal(document.querySelector("#productModal"));
-    delProductModal = new bootstrap.Modal(
-      document.querySelector("#delProductModal")
-    );
+    productModal = new bootstrap.Modal("#productModal");
+    delProductModal = new bootstrap.Modal("#delProductModal");
   },
 };
 

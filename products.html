@@ -15,7 +15,7 @@
   <div id="app">
     <div class="container">
       <div class="text-end mt-4">
-        <button class="btn btn-primary" @click="openModal('')">
+        <button class="btn btn-primary" @click="openModal('create')">
           建立新的產品
         </button>
       </div>
@@ -52,10 +52,10 @@
             </td>
             <td>
               <div class="btn-group">
-                <button type="button" class="btn btn-outline-primary btn-sm" @click="openModal(product)">
+                <button type="button" class="btn btn-outline-primary btn-sm" @click="openModal('edit',product)">
                   編輯
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm" @click="openDelModal(product)">
+                <button type="button" class="btn btn-outline-danger btn-sm" @click="openModal('delete', product)">
                   刪除
                 </button>
               </div>
@@ -86,15 +86,31 @@
                   </div>
                   <img class="img-fluid" :src="tempProduct.imageUrl" alt="">
                 </div>
-                <div v-if="!tempProduct.imageUrl">
-                  <button class="btn btn-outline-primary btn-sm d-block w-100">
-                    新增圖片
-                  </button>
-                </div>
-                <div v-else>
-                  <button class="btn btn-outline-danger btn-sm d-block w-100">
-                    刪除圖片
-                  </button>
+                <div>
+                  <h4>多圖設置</h4>
+                  <!-- 判斷是否為陣列 -->
+                  <div v-if="Array.isArray(tempProduct.imagesUrl)">
+                    <template v-for="(img, key) in tempProduct.imagesUrl" :key="key + 1653256">
+                      <input type="text" class="form-control" v-model="tempProduct.imagesUrl[key]">
+                      <img :src="tempProduct.imagesUrl[key]" alt="" class="img-fluid mb-2">
+                    </template>
+                    <!-- 判斷新增、刪除出現的時機 -->
+                    <!-- 新增的條件:沒有欄位的時候、或是目前欄位是有資料的 -->
+                    <button class="btn btn-outline-primary btn-sm d-block w-100"
+                      v-if="
+                      !tempProduct.imagesUrl.length ||
+                      tempProduct.imagesUrl[tempProduct.imagesUrl.length - 1]
+                      "
+                      @click="tempProduct.imagesUrl.push('')">
+                      新增圖片
+                    </button>
+                    <!-- 刪除的條件:有欄位的時候才能刪除 -->
+                    <button class="btn btn-outline-danger btn-sm d-block w-100"
+                      v-else
+                      @click="tempProduct.imagesUrl.pop()">
+                      刪除圖片
+                    </button>
+                  </div>
                 </div>
               </div>
               <div class="col-sm-8">
